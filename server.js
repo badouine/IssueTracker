@@ -1,7 +1,8 @@
 const express = require('express');
 const app = express();
-
+const bodyParser = require('body-parser');
 app.use(express.static('public'));
+app.use(bodyParser.json());
 
 const issues = [
       {
@@ -20,6 +21,16 @@ const issues = [
       const metadata = { total_count: issues.length };
       res.json({ _metadata: metadata, records: issues });
     });
+
+    app.post('/api/issues', (req, res) => {
+          const newIssue = req.body;
+          newIssue.id = issues.length + 1;
+          newIssue.created = new Date();
+            if (!newIssue.status)
+        newIssue.status = 'New';
+      issues.push(newIssue);
+      res.json(newIssue);
+});
 
 app.listen(3000, function() {
     console.log('app started on port 3000');
