@@ -5,7 +5,8 @@ app.use(express.static('public'));
 app.use(bodyParser.json());
 
 const MongoClient = require('mongodb').MongoClient;
-
+// charge module issue
+const Issue = require('./issue.js');
 let db;
 MongoClient.connect('mongodb://localhost/issuetracker').then(connection => {
   db = connection;
@@ -16,42 +17,12 @@ MongoClient.connect('mongodb://localhost/issuetracker').then(connection => {
   console.log('ERROR:', error);
 });
 
-    const validIssueStatus = {
-          New: true,
-          Open: true,
-          Assigned: true,
-          Fixed: true,
-          Verified: true,
-          Closed: true,
-        };
-        const issueFieldType = {
-          status: 'required',
-          owner: 'required',
-          effort: 'optional',
-          created: 'required',
-          completionDate: 'optional',
-          title: 'required',
-        };
-      
-        function validateIssue(issue) {
-              for (const field in issueFieldType) {
-                const type = issueFieldType[field];
-                if (!type) {
-                  delete issue[field];
-                } else if (type === 'required' && !issue[field]) {
-                  return `${field} is required.`;
-                }
-              }
-              if (!validIssueStatus[issue.status])
-                return `${issue.status} is not a valid status.`;
-              return null;
-            }
             app.post('/api/issues', (req, res) => {
               const newIssue = req.body;
               newIssue.created = new Date();
               if (!newIssue.status)
                 newIssue.status = 'New';
-              const err = validateIssue(newIssue)
+              const err = Issue.validateIssue(newIssue)
               if (err) {
                 res.status(422).json({ message: `Invalid request: ${err}` });
                 return;
